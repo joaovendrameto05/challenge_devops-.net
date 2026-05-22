@@ -17,8 +17,8 @@ services:
     image: oscarfonts/h2
     container_name: h2-db
     ports:
-      - "8082:81"     # H2 Console
-      - "9090:1521"   # TCP Connection
+      - "8082:81"
+      - "9090:1521"
     volumes:
       - h2_data:/opt/h2-data
     restart: unless-stopped
