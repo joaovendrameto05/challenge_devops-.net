@@ -1,39 +1,27 @@
 version: '3.8'
 
 services:
-  oracle-db:
-    image: gvenzl/oracle-free:latest
-    container_name: oracle-db
-    environment:
-      ORACLE_PASSWORD: 123456
-      APP_USER: CELTICSTECH
-      APP_USER_PASSWORD: 123456
-    ports:
-      - "1521:1521"
-    volumes:
-      - oracle-data:/opt/oracle/oradata
-    networks:
-      - celtics-network
-
-  celticstech-api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: celticstech-api
-    depends_on:
-      - oracle-db
-    environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__OracleConnection: "User Id=CELTICSTECH;Password=123456;Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=oracle-db)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=FREEPDB1)))"
+  celtics-app:
+    build: .
+    container_name: celtics-app
     ports:
       - "8080:8080"
-    networks:
-      - celtics-network
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+    depends_on:
+      - h2-db
+    restart: unless-stopped
+
+  h2-db:
+    image: oscarfonts/h2
+    container_name: h2-db
+    ports:
+      - "8082:81"      # Console H2
+      - "9090:1521"    # Porta TCP para conexão
+    volumes:
+      - h2_data:/opt/h2-data
+    restart: unless-stopped
 
 volumes:
-  oracle-data:
-
-networks:
-  celtics-network:
-    driver: bridge
+  h2_data:
+    name: celtics_h2_volume
