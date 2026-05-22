@@ -1,0 +1,6 @@
+@celticsTech_HostAddress = http://localhost:5202
+
+GET {{celticsTech_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

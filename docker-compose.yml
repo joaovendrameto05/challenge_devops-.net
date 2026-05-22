@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  oracle-db:
+    image: gvenzl/oracle-free:latest
+    container_name: oracle-db
+    environment:
+      ORACLE_PASSWORD: 123456
+      APP_USER: CELTICSTECH
+      APP_USER_PASSWORD: 123456
+    ports:
+      - "1521:1521"
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+    networks:
+      - celtics-network
+
+  celticstech-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: celticstech-api
+    depends_on:
+      - oracle-db
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__OracleConnection: "User Id=CELTICSTECH;Password=123456;Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=oracle-db)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=FREEPDB1)))"
+    ports:
+      - "8080:8080"
+    networks:
+      - celtics-network
+
+volumes:
+  oracle-data:
+
+networks:
+  celtics-network:
+    driver: bridge
