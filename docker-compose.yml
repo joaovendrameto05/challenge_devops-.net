@@ -8,7 +8,8 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - ConnectionStrings__OracleConnection=Data Source=db:1521/XE;User Id=system;Password=ClyvoChallenge2026!;
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     restart: unless-stopped
 
   db:
@@ -21,6 +22,11 @@ services:
     volumes:
       - oracle_data:/opt/oracle/oradata
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "echo 'SELECT 1 FROM DUAL;' | sqlplus -S system/ClyvoChallenge2026!@localhost/XE"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
 volumes:
   oracle_data:
