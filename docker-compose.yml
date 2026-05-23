@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   celtics-app:
     build: .
@@ -7,22 +5,25 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - ASPNETCORE_URLS=http://+:8080
       - ASPNETCORE_ENVIRONMENT=Production
+      # MUDAMOS DE DefaultConnection PARA OracleConnection
+      - ConnectionStrings__OracleConnection=Data Source=db:1521/XE;User Id=system;Password=ClyvoChallenge2026!;
     depends_on:
-      - h2-db
+      - db
     restart: unless-stopped
 
-  h2-db:
-    image: oscarfonts/h2
-    container_name: h2-db
+  db:
+    # ALTERAMOS DE H2 PARA ORACLE PARA CASAR COM O CÓDIGO
+    image: gvenzl/oracle-xe:latest
+    container_name: db
     ports:
-      - "8082:81"
-      - "9090:1521"
+      - "1521:1521"
+    environment:
+      - ORACLE_PASSWORD=ClyvoChallenge2026!
     volumes:
-      - h2_data:/opt/h2-data
+      - oracle_data:/opt/oracle/oradata
     restart: unless-stopped
 
 volumes:
-  h2_data:
-    name: celtics_h2_volume
+  oracle_data:
+    name: celtics_oracle_volume
