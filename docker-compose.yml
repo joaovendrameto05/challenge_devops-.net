@@ -6,14 +6,12 @@ services:
       - "8080:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      # MUDAMOS DE DefaultConnection PARA OracleConnection
-      - ConnectionStrings__OracleConnection=Server=h2-db;Port=1521;Database=celticsdb;User Id=sa;Password=sa;
+      - ConnectionStrings__OracleConnection=Data Source=db:1521/XE;User Id=system;Password=ClyvoChallenge2026!;
     depends_on:
-      - h2-db
+      - db
     restart: unless-stopped
 
   db:
-    # ALTERAMOS DE H2 PARA ORACLE PARA CASAR COM O CÓDIGO
     image: gvenzl/oracle-xe:latest
     container_name: db
     ports:
