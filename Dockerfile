@@ -11,4 +11,8 @@ RUN dotnet publish -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 COPY --from=publish /app/publish .
+
+# ADICIONE ESTA LINHA PARA GARANTIR A NOTA DO ITEM 2.2 (NON-ROOT)
+USER $APP_UID 
+
 ENTRYPOINT ["dotnet", "celticsTech.dll"]
