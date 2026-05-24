@@ -5,25 +5,24 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - ASPNETCORE_URLS=http://+:8080
       - ASPNETCORE_ENVIRONMENT=Production
-      - OracleConnection=User Id=system;Password=oracle;Data Source=db/XE
+      - ConnectionStrings__DefaultConnection=jdbc:h2:tcp://h2-db:1521/./data/celticsdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
     depends_on:
-      - db
+      - h2-db
     restart: unless-stopped
 
-  db:
-    image: gvenzl/oracle-xe:21-slim
-    container_name: db
+  h2-db:
+    image: oscarfonts/h2
+    container_name: h2-db
     ports:
       - "1521:1521"
+      - "8082:81"
     environment:
-      - ORACLE_PASSWORD=oracle
+      - H2_OPTIONS=-tcpAllowOthers -webAllowOthers
     volumes:
-      - oracle_data:/opt/oracle/oradata
+      - h2_data:/opt/h2-data
     restart: unless-stopped
-    shm_size: 1g
 
 volumes:
-  oracle_data:
-    name: celtics_oracle_volume
+  h2_data:
+    name: celtics_h2_volume

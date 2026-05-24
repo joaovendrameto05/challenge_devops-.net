@@ -22,7 +22,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         throw new InvalidOperationException("❌ ConnectionString não encontrada!");
     }
 
-    options.UseOracle(connectionString);
+    options.UseNpgsql(connectionString);
 });
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
