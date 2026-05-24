@@ -8,23 +8,21 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    });
-
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
-                        ?? builder.Configuration.GetConnectionString("OracleConnection");
+    var connectionString = builder.Configuration.GetConnectionString("OracleConnection");
+    
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    }
 
     if (string.IsNullOrEmpty(connectionString))
     {
-        throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+        throw new InvalidOperationException("❌ ConnectionString não encontrada!");
     }
 
-    options.UseH2(connectionString);
+    options.UseOracle(connectionString);
 });
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -78,7 +76,7 @@ using (var scope = app.Services.CreateScope())
         if (context.Database.GetPendingMigrations().Any())
         {
             context.Database.Migrate();
-            Console.WriteLine("✅ Migrations aplicadas com sucesso no H2!");
+            Console.WriteLine("✅ Migrations aplicadas com sucesso no Oracle!");
         }
         else
         {
