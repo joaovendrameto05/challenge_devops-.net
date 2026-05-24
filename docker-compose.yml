@@ -5,28 +5,24 @@ services:
     ports:
       - "8080:8080"
     environment:
+      - ASPNETCORE_URLS=http://+:8080
       - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__OracleConnection=Data Source=db:1521/XE;User Id=system;Password=ClyvoChallenge2026!;
+      - OracleConnection=User Id=system;Password=oracle;Data Source=db/XE
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     restart: unless-stopped
 
   db:
-    image: gvenzl/oracle-xe:latest
+    image: gvenzl/oracle-xe:21-slim
     container_name: db
     ports:
       - "1521:1521"
     environment:
-      - ORACLE_PASSWORD=ClyvoChallenge2026!
+      - ORACLE_PASSWORD=oracle
     volumes:
       - oracle_data:/opt/oracle/oradata
     restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "echo 'SELECT 1 FROM DUAL;' | sqlplus -S system/ClyvoChallenge2026!@localhost/XE"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
+    shm_size: 1g
 
 volumes:
   oracle_data:
