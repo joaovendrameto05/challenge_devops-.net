@@ -10,11 +10,10 @@
 using System;
 using System.Reflection;
 
-[assembly: Microsoft.Extensions.Configuration.UserSecrets.UserSecretsIdAttribute("1bbe5b28-9ea4-4ce7-ab46-a867fac18356")]
 [assembly: System.Reflection.AssemblyCompanyAttribute("celticsTech")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5e19065c41e0fcd4fc6b21f1f3bd0da3d16c91bf")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+97aea20df5e25450488dff91d92f5207f6290d39")]
 [assembly: System.Reflection.AssemblyProductAttribute("celticsTech")]
 [assembly: System.Reflection.AssemblyTitleAttribute("celticsTech")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
