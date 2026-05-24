@@ -1,28 +1,5 @@
 services:
   celtics-app:
     build: .
-    container_name: celtics-app
     ports:
       - "8080:8080"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__DefaultConnection=jdbc:h2:tcp://h2-db:1521/./data/celticsdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
-    depends_on:
-      - h2-db
-    restart: unless-stopped
-
-  h2-db:
-    image: oscarfonts/h2
-    container_name: h2-db
-    ports:
-      - "1521:1521"
-      - "8082:81"
-    environment:
-      - H2_OPTIONS=-tcpAllowOthers -webAllowOthers
-    volumes:
-      - h2_data:/opt/h2-data
-    restart: unless-stopped
-
-volumes:
-  h2_data:
-    name: celtics_h2_volume
