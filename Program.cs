@@ -3,7 +3,8 @@ using celticsTech.Middlewares;
 using celticsTech.Repositories;
 using celticsTech.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
+// REMOVA a linha 'using Microsoft.OpenApi.Models;'
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
