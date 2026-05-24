@@ -5,16 +5,18 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1. Configuração do Banco em Memória (Garante que não haverá erro de conexão)
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseInMemoryDatabase("CelticsDb"));
+// Lendo a string de conexão do Docker
+var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection") 
+                       ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
-// 2. Injeção de Dependências
+// Conectando no Oracle
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseOracle(connectionString));
+
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IPetRepository, PetRepository>();
 builder.Services.AddScoped<IVeterinarianRepository, VeterinarianRepository>();
 builder.Services.AddScoped<IConsultationRepository, ConsultationRepository>();
-
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<PetService>();
 builder.Services.AddScoped<VeterinarianService>();
@@ -26,7 +28,13 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// 3. Configuração do Swagger para abrir direto na raiz do IP
+// TRUQUE DE MESTRE: Cria as tabelas sozinho sem precisar da pasta Migrations!
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.EnsureCreated();
+}
+
 app.UseSwagger();
 app.UseSwaggerUI(options => 
 { 
