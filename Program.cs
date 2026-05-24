@@ -3,7 +3,7 @@ using celticsTech.Middlewares;
 using celticsTech.Repositories;
 using celticsTech.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi;
+using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,9 +16,15 @@ builder.Services.AddControllers()
 
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    options.UseOracle(
-        builder.Configuration.GetConnectionString("OracleConnection")
-    );
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+                        ?? builder.Configuration.GetConnectionString("OracleConnection");
+
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+    }
+
+    options.UseH2(connectionString);
 });
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -39,7 +45,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "celticsTech API",
         Version = "v1",
-        Description = "Veterinary management API developed with ASP.NET Core and Oracle Database"
+        Description = "Veterinary management API developed with ASP.NET Core and H2 Database"
     });
 });
 
@@ -50,7 +56,6 @@ var app = builder.Build();
 app.UseMiddleware<ErrorHandlingMiddleware>();
 
 app.UseSwagger();
-
 app.UseSwaggerUI(options =>
 {
     options.SwaggerEndpoint("/swagger/v1/swagger.json", "celticsTech API v1");
@@ -58,11 +63,9 @@ app.UseSwaggerUI(options =>
 });
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
 
 app.MapControllers();
-
 app.MapHealthChecks("/health");
 
 using (var scope = app.Services.CreateScope())
@@ -75,12 +78,16 @@ using (var scope = app.Services.CreateScope())
         if (context.Database.GetPendingMigrations().Any())
         {
             context.Database.Migrate();
-            Console.WriteLine("Migrations aplicadas com sucesso no Oracle!");
+            Console.WriteLine("✅ Migrations aplicadas com sucesso no H2!");
+        }
+        else
+        {
+            Console.WriteLine("ℹ️ Nenhuma migration pendente.");
         }
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Erro ao aplicar as migrations: {ex.Message}");
+        Console.WriteLine($"❌ Erro ao aplicar as migrations: {ex.Message}");
     }
 }
 
