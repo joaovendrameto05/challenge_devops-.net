@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("celticsTech")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+59cced59f4344b95ba4e0327d8092b554ae2dd31")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+70b97f9c9691fc36f275c04590c02e618b358d98")]
 [assembly: System.Reflection.AssemblyProductAttribute("celticsTech")]
 [assembly: System.Reflection.AssemblyTitleAttribute("celticsTech")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
