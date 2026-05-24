@@ -4,30 +4,17 @@ services:
     container_name: celtics-app
     ports:
       - "8080:8080"
+    depends_on:
+      - h2-db
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__OracleConnection=Data Source=db:1521/XE;User Id=system;Password=ClyvoChallenge2026!;
-    depends_on:
-      db:
-        condition: service_healthy
-    restart: unless-stopped
+      - ConnectionStrings__DefaultConnection=jdbc:h2:tcp://h2-db:1521/./data/celticsdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
 
-  db:
-    image: gvenzl/oracle-xe:latest
-    container_name: db
+  h2-db:
+    image: oscarfonts/h2
+    container_name: h2-db
     ports:
       - "1521:1521"
+      - "8082:81"
     environment:
-      - ORACLE_PASSWORD=ClyvoChallenge2026!
-    volumes:
-      - oracle_data:/opt/oracle/oradata
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "echo 'SELECT 1 FROM DUAL;' | sqlplus -S system/ClyvoChallenge2026!@localhost/XE"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-
-volumes:
-  oracle_data:
-    name: celtics_oracle_volume
+      - H2_OPTIONS=-tcpAllowOthers -webAllowOthers
