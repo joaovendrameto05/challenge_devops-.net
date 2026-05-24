@@ -8,6 +8,7 @@ services:
       - h2-db
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
+<<<<<<< HEAD
       - ConnectionStrings__DefaultConnection=jdbc:h2:tcp://h2-db:1521/./data/celticsdb;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1
 
   h2-db:
@@ -18,3 +19,6 @@ services:
       - "8082:81"
     environment:
       - H2_OPTIONS=-tcpAllowOthers -webAllowOthers
+=======
+      - ConnectionStrings__DefaultConnection=Server=fake;Database=fake;
+>>>>>>> d5cd3c48c5ed28864649490364a3231269c408b4

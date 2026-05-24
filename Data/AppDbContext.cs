@@ -1,17 +1,13 @@
-﻿protected override void OnModelCreating(ModelBuilder modelBuilder)
+﻿using Microsoft.EntityFrameworkCore;
+using celticsTech.Models;
+
+namespace celticsTech.Data;
+
+public class AppDbContext : DbContext
 {
-    base.OnModelCreating(modelBuilder);
-    
-    foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-    {
-        foreach (var property in entityType.GetProperties())
-        {
-            if (property.ClrType == typeof(bool))
-            {
-                property.SetValueConverter(new Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<bool, int>(
-                    v => v ? 1 : 0,
-                    v => v == 1));
-            }
-        }
-    }
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+    public DbSet<User> Users { get; set; }
+    public DbSet<Pet> Pets { get; set; }
+    public DbSet<Veterinarian> Veterinarians { get; set; }
+    public DbSet<Consultation> Consultations { get; set; }
 }
