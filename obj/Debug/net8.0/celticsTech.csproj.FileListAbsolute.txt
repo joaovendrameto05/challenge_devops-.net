@@ -1,9 +1,0 @@
-C:\challenge_devops\challenge_devops-.net\obj\Debug\net8.0\celticsTech.csproj.AssemblyReference.cache
-C:\challenge_devops\challenge_devops-.net\obj\Debug\net8.0\rpswa.dswa.cache.json
-C:\challenge_devops\challenge_devops-.net\obj\Debug\net8.0\celticsTech.GeneratedMSBuildEditorConfig.editorconfig
-C:\challenge_devops\challenge_devops-.net\obj\Debug\net8.0\celticsTech.AssemblyInfoInputs.cache
-C:\challenge_devops\challenge_devops-.net\obj\Debug\net8.0\celticsTech.AssemblyInfo.cs
-C:\challenge_devops\challenge_devops-.net\obj\Debug\net8.0\celticsTech.csproj.CoreCompileInputs.cache
-C:\challenge_devops\challenge_devops-.net\obj\Debug\net8.0\celticsTech.MvcApplicationPartsAssemblyInfo.cs
-C:\challenge_devops\challenge_devops-.net\obj\Debug\net8.0\celticsTech.MvcApplicationPartsAssemblyInfo.cache
-C:\challenge_devops\challenge_devops-.net\obj\Debug\net8.0\celticsTech.sourcelink.json
