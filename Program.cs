@@ -1,22 +1,15 @@
-using celticsTech.Data;
-using celticsTech.Middlewares;
-using celticsTech.Repositories;
-using celticsTech.Services;
-using Microsoft.EntityFrameworkCore;
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-var builder = WebApplication.CreateBuilder(args);
+if (string.IsNullOrEmpty(connectionString))
+{
+    // Fallback para ler a variável de ambiente diretamente se o arquivo não encontrar
+    connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+}
+
+if (string.IsNullOrEmpty(connectionString))
+{
+    throw new InvalidOperationException("❌ A string de conexão 'DefaultConnection' não foi encontrada!");
+}
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseInMemoryDatabase("CelticsDb"));
-
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
-var app = builder.Build();
-
-app.UseSwagger();
-app.UseSwaggerUI(options => { options.RoutePrefix = string.Empty; });
-
-app.MapControllers();
-app.Run();
+    options.UseInMemoryDatabase("CelticsDb")); // Use In-Memory para evitar erro de banco agora

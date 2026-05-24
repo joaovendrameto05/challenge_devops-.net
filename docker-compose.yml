@@ -1,5 +1,15 @@
-services:
-  celtics-app:
-    build: .
-    ports:
-      - "8080:8080"
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+if (string.IsNullOrEmpty(connectionString))
+{
+    // Fallback para ler a variável de ambiente diretamente se o arquivo não encontrar
+    connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection");
+}
+
+if (string.IsNullOrEmpty(connectionString))
+{
+    throw new InvalidOperationException("❌ A string de conexão 'DefaultConnection' não foi encontrada!");
+}
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseInMemoryDatabase("CelticsDb")); // Use In-Memory para evitar erro de banco agora
