@@ -1,81 +1,75 @@
-Projeto: API CelticsTech (Veterinária)
-Este projeto consiste em uma API desenvolvida em C# .NET 8 para gerenciamento de dados veterinários, conteinerizada com Docker e utilizando persistência de dados com Oracle Database.
+# 🐾 API CelticsTech - Gestão Veterinária Avançada
 
-Arquitetura do Sistema
-Backend: C# .NET 8
+![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Oracle](https://img.shields.io/badge/Oracle-F80000?style=for-the-badge&logo=oracle&logoColor=white)
+![Azure](https://img.shields.io/badge/Microsoft_Azure-0089D6?style=for-the-badge&logo=microsoft-azure&logoColor=white)
+![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)
 
-Banco de Dados: Oracle XE (via Docker)
+## 📖 Descrição do Projeto
+A **CelticsTech API** é um sistema de back-end robusto focado na gestão completa de clínicas veterinárias. O projeto foi construído utilizando **C# .NET 8**, conteinerizado com **Docker** e implementado em infraestrutura de nuvem na **Microsoft Azure**. 
 
-Orquestração: Docker Compose
+O sistema realiza o gerenciamento completo (CRUD) de Consultas, Pets, Usuários e Veterinários. Visando a resiliência e integridade dos dados clínicos, a aplicação utiliza um banco de dados **Oracle** executado em container, com persistência garantida através de **Named Volumes** (Volumes Nomeados).
 
-Documentação: Swagger (OpenAPI)
+## 🏢 Benefícios para o Negócio
+* **Escalabilidade em Nuvem:** Hospedada em uma Máquina Virtual na Azure, a API está preparada para escalar conforme o aumento do fluxo de atendimentos da clínica.
+* **Segurança e Isolamento (Non-Root User):** Seguindo as melhores práticas de DevSecOps, a aplicação roda dentro do container Docker com privilégios restritos (usuário `app`), mitigando riscos de vulnerabilidades e invasões.
+* **Persistência de Dados Segura:** O uso de volumes mapeados garante que, mesmo que o container do banco de dados seja reiniciado ou atualizado, o histórico médico dos pets e dados de clientes jamais sejam perdidos.
+* **Integração Facilitada:** A interface OpenAPI (Swagger) oferece uma documentação viva e interativa, permitindo que times de Front-end ou Mobile consumam a API sem atrito.
 
-Infraestrutura: Azure VM (Ubuntu 24.04 LTS)
+## 🏗️ Desenho Macro da Arquitetura
+A arquitetura do projeto segue um fluxo moderno e isolado:
+1. O **Cliente (Navegador/Mobile)** faz uma requisição HTTP.
+2. A requisição passa pelo **Firewall (Azure Network Security Group)** que libera o tráfego nas portas essenciais (ex: 8080).
+3. O tráfego atinge a **Azure VM (Ubuntu 24.04 LTS)** onde o Docker Engine atua como orquestrador.
+4. O **Container da API (.NET 8)** recebe a requisição (rodando de forma segura como *Non-Root*).
+5. A API se comunica via rede interna do Docker com o **Container do Oracle Database**.
+6. Os dados do Oracle são salvos fisicamente em um **Volume Nomeado (`celtics_oracle_volume`)** no disco da Máquina Virtual.
 
-Pré-requisitos
-Para rodar este projeto, você precisará de:
+## 📍 Rotas da API (Swagger)
+A documentação interativa está disponível na raiz da aplicação. As principais entidades gerenciadas incluem:
+* `[GET, POST, PUT, DELETE] /api/pets` - Gestão de animais (Cachorros, Gatos, etc).
+* `[GET, POST, PUT, DELETE] /api/consultations` - Agendamentos e prontuários.
+* `[GET, POST, PUT, DELETE] /api/users` - Gestão de tutores (clientes).
+* `[GET, POST, PUT, DELETE] /api/veterinarians` - Gestão da equipe médica e especialidades.
 
-.NET SDK 8.0 instalado localmente.
+---
 
-Docker Desktop (ou Docker Engine) instalado.
+## ✅ Requisitos Acadêmicos Atendidos (Checklist)
+Este projeto foi desenvolvido em estrita conformidade com as regras estabelecidas nas disciplinas de DevOps:
+- [x] **2.1. Execução em Background:** Utilização de `docker-compose up -d`.
+- [x] **2.2. Usuário Non-Root:** Implementado no Dockerfile via `USER $APP_UID`.
+- [x] **2.3. Persistência de Dados:** Implementado banco **Oracle** em container.
+- [x] **2.4. Volumes Nomeados:** Utilização de *Named Volume* (`oracle_data`) no docker-compose.
+- [x] **CRUD Completo:** Rotas testadas via Swagger provando inserção, leitura, atualização e exclusão.
 
-Acesso a uma instância de máquina virtual (Azure VM).
+---
 
-Git configurado.
+## 🚀 Passo a Passo: Provisionamento da Infraestrutura (Azure CLI)
+Toda a infraestrutura foi provisionada via linha de comando (Azure CLI). Abaixo estão os comandos exatos utilizados para preparar o servidor:
 
-Passo a Passo: Configuração e Deploy
-1. Preparação do Ambiente Local
-Antes de realizar o deploy, garantimos que o projeto estivesse limpo e sem conflitos de referências anteriores (como pastas de migração corrompidas ou referências cruzadas):
+```bash
+# 1. Criação do Grupo de Recursos
+az group create --name celtics_group --location southafricanorth
 
-Limpeza: Removemos as pastas bin, obj e a pasta Migrations (para garantir que o banco seja criado dinamicamente).
+# 2. Criação da Máquina Virtual (Ubuntu Linux)
+az vm create \
+  --resource-group celtics_group \
+  --name celticsgroupvm \
+  --image Ubuntu2204 \
+  --admin-username admlnx \
+  --generate-ssh-keys \
+  --size Standard_B2as_v2
 
-Dependências: Configuramos o arquivo celticsTech.csproj para incluir os pacotes necessários:
+# 3. Abertura da porta 8080 para a Aplicação
+az vm open-port --port 8080 --resource-group celtics_group --name celticsgroupvm
 
-XML
-<PackageReference Include="Oracle.EntityFrameworkCore" Version="8.23.60" />
-<PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-Configuração de Banco: No Program.cs, implementamos o comando db.Database.EnsureCreated() para criar as tabelas automaticamente no Oracle ao iniciar a aplicação, eliminando a necessidade de pastas de migração.
+# 4. Conexão na VM via SSH
+ssh admlnx@<IP_PUBLICO_GERADO>
 
-2. Sincronização (Git)
-Após as correções, realizamos o versionamento:
-
-Bash
-git add .
-git commit -m "Correção final do projeto e configuração Oracle"
-git push origin main
-3. Deploy na Azure VM
-Acesse a sua VM via terminal (Cloud Shell ou SSH) e siga os passos abaixo:
-
-Atualizar o código:
-
-Bash
-cd ~/challenge_devops-.net
-git pull
-Limpar volumes anteriores:
-O volume celtics_oracle_volume garante a persistência dos dados entre reinicializações dos containers.
-
-Bash
-sudo docker compose down -v
-Subir a infraestrutura:
-
-Bash
-sudo docker compose up -d --build
-Monitorar a inicialização:
-O banco Oracle pode levar alguns minutos para carregar na primeira vez.
-
-Bash
-sudo docker compose logs -f celtics-app
-Aguarde a mensagem "Application started" aparecer no terminal.
-
-Demonstração do CRUD (Swagger)
-A aplicação utiliza o Swagger para interface. Acesse via navegador:
-http://<IP_DA_SUA_VM>:8080/
-
-Roteiro de Testes para Vídeo:
-Create (POST): Clique em /api/pets -> Try it out. Insira o JSON do primeiro pet e clique em Execute. Repita o processo com um segundo pet.
-
-Read (GET): Vá em /api/pets (sem ID) -> Try it out -> Execute. Mostre a lista com os dados inseridos.
-
-Update (PUT): Vá em /api/pets/{id}. Insira o ID e o JSON atualizado. Clique em Execute.
-
-Delete (DELETE): Vá em /api/pets/{id}. Insira o ID e clique em Execute. Verifique no GET se o item foi removido.
+# 5. Instalação das Dependências (Docker e Git)
+sudo apt update && sudo apt upgrade -y
+sudo apt install docker.io docker-compose git -y
+sudo systemctl start docker
+sudo systemctl enable docker
+sudo usermod -aG docker $USER
