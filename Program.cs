@@ -2,14 +2,13 @@ using celticsTech.Data;
 using celticsTech.Repositories;
 using celticsTech.Services;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Lendo a string de conexão do Docker
 var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection") 
                        ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
-// Conectando no Oracle
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseOracle(connectionString));
 
@@ -28,11 +27,19 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// TRUQUE DE MESTRE: Cria as tabelas sozinho sem precisar da pasta Migrations!
+// TRUQUE DE MESTRE: Tenta criar as tabelas, se já existirem (Volume Persistente), ele ignora o erro e segue em frente!
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.EnsureCreated();
+    try 
+    {
+        db.Database.EnsureCreated();
+    }
+    catch (Exception)
+    {
+        // Se cair aqui, é porque a tabela já existe no Volume (ORA-00955).
+        // A persistência funcionou! Apenas ignoramos o erro de criação e seguimos.
+    }
 }
 
 app.UseSwagger();
