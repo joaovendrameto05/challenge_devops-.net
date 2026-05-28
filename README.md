@@ -1,336 +1,165 @@
-🐾 CHALLENGE 2026
-Projeto: CelticsTech API – Gestão Veterinária
+API CelticsTech - Sistema de Gestão Veterinária
 
-Disciplina: DevOps Tools & Cloud Computing
-Turma: 2TDS
-Professor: (colocar nome)
+1. Descrição do Projeto
+A CelticsTech API é um sistema de back-end desenvolvido em C# .NET 8, concebido para a gestão integral de clínicas veterinárias. A aplicação está arquitetada em contentores (Docker) e implementada numa infraestrutura de nuvem (Microsoft Azure). O sistema expõe endpoints para o registo e gestão de Consultas, Pets, Utilizadores (Tutores) e Veterinários. A persistência de dados é garantida através de uma instância do Oracle Database, utilizando volumes nomeados para assegurar a integridade da informação face a reinicializações da infraestrutura.
 
-Integrantes:
+3. Benefícios para o Negócio
+* Alta Disponibilidade: O alojamento em infraestrutura de nuvem permite o acesso contínuo e a escalabilidade dos recursos mediante a procura da clínica.
+* Segurança Isolada: A aplicação executa sob um utilizador sem privilégios de raiz (non-root user) no contexto do contentor, limitando a superfície de ataque.
+* Integridade e Persistência: A utilização de "Named Volumes" do Docker em conjunto com o Oracle Database previne a perda do histórico clínico e dados sensíveis em caso de falha do serviço.
+* Integração Normalizada: A documentação via Swagger (OpenAPI) fornece um contrato de interface claro, facilitando a integração futura com aplicações móveis ou web.
 
-Nícolas de Oliveira Jacob — RM: 564205 — Turma: 2TDPX
-João Victor Vendramente — RM: 563665 — Turma: 2TDSPV
-Gabriel Ambrósio Saraiva — RM: 566552 — Turma: 2TDSPV
-Vinicius Romaguera Cardozo — RM: 562308 — Turma: 2TDPX
-Yuri Fuzinatto Garzoli Barreto — RM: 561450 — Turma: 2TDSPX
+3. Desenho Macro da Arquitetura
+A arquitetura do sistema segue o seguinte fluxo de requisição e persistência:
+1. O cliente realiza uma requisição HTTP.
+2. A requisição atravessa o Network Security Group (Firewall) da Azure, que permite tráfego na porta designada (8080).
+3. A requisição atinge a Máquina Virtual (Ubuntu Linux) alojada na Azure.
+4. O tráfego é direcionado para o contentor da API (.NET 8), que processa a lógica de negócio de forma isolada.
+5. A API comunica, através da rede interna do Docker, com o contentor do Oracle Database.
+6. Os dados são lidos/escritos e armazenados fisicamente num Volume Nomeado associado ao disco da Máquina Virtual, garantindo a persistência.
 
-São Paulo – 2026
+4. Pré-requisitos
+* Azure CLI instalado localmente.
+* Conta ativa na Microsoft Azure.
+* Cliente SSH para acesso remoto.
 
-📑 SUMÁRIO
+--------------------------------------------------
 
-Introdução
-Problema do Negócio
-Solução Proposta
-Tecnologias Utilizadas
-Arquitetura da Solução
-Infraestrutura DevOps
-Containerização
-Segurança
-Persistência de Dados
-Rotas da API
-README Estruturado
-Requisitos Atendidos
-Arquitetura Macro (Cloud)
-Conclusão
+5. How To: Provisionamento e Instalação
 
+O processo abaixo descreve passo a passo a recriação da infraestrutura, instalação de dependências e execução do projeto.
 
-🧠 1. Introdução
-O presente trabalho foi desenvolvido no contexto do Challenge FIAP 2026, cujo objetivo é proporcionar uma experiência prática próxima ao mercado de tecnologia. [2TDS Fever...º Semestre | PDF]
-O desafio consiste na criação de soluções digitais voltadas à continuidade da saúde dos pets, promovendo inovação, escalabilidade e impacto real no mercado veterinário. [2TDS Fever...º Semestre | PDF]
+Passo 5.1: Criação da Infraestrutura no Azure
+Num terminal local com o Azure CLI autenticado, execute os seguintes comandos para provisionar os recursos:
 
-🐶 2. Problema do Negócio
-A jornada atual da saúde dos pets é caracterizada por ser:
+# 1. Criação do Grupo de Recursos
+az group create --name celtics_group --location southafricanorth
 
-Episódica
-Reativa
-Pouco integrada
+# 2. Criação da Máquina Virtual Ubuntu
+az vm create \
+  --resource-group celtics_group \
+  --name celticsgroupvm \
+  --image Ubuntu2204 \
+  --admin-username admlnx \
+  --generate-ssh-keys \
+  --size Standard_B2as_v2
 
-Isso gera impactos negativos:
+# 3. Abertura da porta para a Aplicação
+az vm open-port --port 8080 --resource-group celtics_group --name celticsgroupvm
 
-Falta de acompanhamento contínuo
-Esquecimento de tratamentos
-Baixa fidelização
-Piora na qualidade de vida do animal [2TDS Fever...º Semestre | PDF]
 
+Passo 5.2: Acesso e Instalação de Dependências
+Obtenha o endereço IP público gerado no passo anterior e aceda à máquina virtual via SSH:
 
-💡 3. Solução Proposta
-A solução desenvolvida é a CelticsTech API, um sistema backend para clínicas veterinárias que possibilita:
+# Acesso via SSH
+ssh admlnx@<IP_PUBLICO_DA_VM>
 
-Gestão de Pets
-Controle de Consultas
-Cadastro de Usuários
-Administração de Veterinários
+# Atualização dos pacotes do sistema
+sudo apt update && sudo apt upgrade -y
 
-A proposta busca transformar o modelo atual em:
+# Instalação do Docker e Git
+sudo apt install docker.io docker-compose git -y
 
-Preventivo
-Inteligente
-Integrado
-Escalável
+# Ativação dos serviços do Docker
+sudo systemctl start docker
+sudo systemctl enable docker
 
 
-⚙️ 4. Tecnologias Utilizadas
+Passo 5.3: Execução da Aplicação (Deployment)
+Dentro da Máquina Virtual, efetue a clonagem e a orquestração dos contentores:
 
-.NET 8 (C#)
-Docker
-Oracle Database
-Microsoft Azure
-Ubuntu Server
-Swagger
+# 1. Clonar o repositório
+git clone https://github.com/joaovendrameto05/challenge_devops-.net.git
+cd challenge_devops-.net
 
+# 2. Iniciar o contentor do Banco de Dados primeiramente
+sudo docker-compose up -d db
 
-🏗️ 5. Arquitetura da Solução
-A arquitetura do sistema segue um modelo moderno baseado em cloud:
+# NOTA TÉCNICA: O Oracle Database XE requer aproximadamente 60 a 90 segundos 
+# para inicializar os seus serviços internos e o listener antes de aceitar conexões.
+# Aguarde este período antes de avançar para o passo 3.
+sleep 90
 
-Cliente envia requisição HTTP
-Azure libera acesso via firewall
-VM Linux recebe tráfego
-Docker executa containers
-API processa requisições
-Banco Oracle armazena dados
+# 3. Iniciar a API
+sudo docker-compose up -d celtics-app
 
+# 4. Verificar os registos (logs) para confirmar a inicialização
+sudo docker-compose logs -f celtics-app
 
-☁️ 6. Infraestrutura DevOps
-Esta é a parte principal do projeto.
-A infraestrutura foi criada utilizando Azure CLI, conforme exigido no desafio. [2TDS Fever...º Semestre | PDF]
-Etapas realizadas:
+O sistema estará operacional quando o registo apresentar a mensagem "Application started".
 
-Criação de Resource Group
-Criação da Máquina Virtual Linux
-Abertura da porta 8080
-Instalação do Docker
-Instalação do Git
+--------------------------------------------------
 
+6. How To: Como Testar a Aplicação (Rotas e CRUD)
 
-💻 Script utilizado:
-Shellaz group create --name celtics_group --location southafricanorthaz vm create \  --resource-group celtics_group \  --name celticsgroupvm \  --image Ubuntu2204 \  --admin-username admlnx \  --generate-ssh-keysaz vm open-port --port 8080sudo apt update && sudo apt install docker.io docker-compose -y``Mostrar mais linhas
+Aceda à interface do Swagger através do navegador web: http://<IP_PUBLICO_DA_VM>:8080
 
-🐳 7. Containerização
-O sistema foi completamente containerizado:
+Para testar o fluxo completo, respeite a ordem de dependência das tabelas (Tutor -> Veterinário -> Pet -> Consulta). Certifique-se de não enviar o atributo "id" no corpo da requisição POST, pois este é gerado automaticamente pelo banco de dados.
 
-Container da API (.NET)
-Container do Banco Oracle
+1. POST /api/users
+{
+  "name": "Maria Silva",
+  "email": "maria@email.com",
+  "password": "SenhaSegura123!",
+  "cpf": "12345678901",
+  "phone": "11999998888"
+}
 
+2. POST /api/veterinarians
+{
+  "name": "Dr. Carlos Silva",
+  "email": "carlos.vet@clinica.com",
+  "crmv": "CRM-SP 12345",
+  "specialty": 0,
+  "phone": "11988887777",
+  "yearsExperience": 10
+}
 
-✅ Boas práticas aplicadas:
-✔ Execução em background (docker-compose up -d)
-✔ Uso de usuário non-root
-✔ Separação por serviços
-✔ Orquestração com Docker Compose [2TDS Fever...º Semestre | PDF]
+3. POST /api/pets
+{
+  "name": "Thor",
+  "species": "Cachorro",
+  "breed": "Golden Retriever",
+  "ageType": 1,
+  "age": 4,
+  "weight": 30.5,
+  "petSize": 2
+}
 
-🔐 8. Segurança
-Práticas de segurança implementadas:
+Após as inserções, utilizei os métodos GET para listar os registos, PUT indicando o ID para atualizar um registo específico, e DELETE para remover.
 
-Execução sem privilégios root
-Isolamento de containers
-Firewall configurado na Azure
+--------------------------------------------------
 
+7. Prova de Persistência Direta no Banco de Dados
 
-💾 9. Persistência de Dados
-A persistência é garantida por volume nomeado Docker:
-celtics_oracle_volume
+Para comprovar fisicamente que a aplicação está a escrever os dados no Oracle Database (e atestar o funcionamento do volume nomeado), execute a seguinte validação diretamente no terminal da Máquina Virtual:
 
-Isso assegura:
+# 1. Aceder ao terminal interativo do contentor do Oracle
+sudo docker exec -it db bash
 
-Integridade dos dados
-Persistência após reinicializações
-Segurança no armazenamento
+# 2. Iniciar a sessão no SQLPlus (substitua a senha pela configurada no docker-compose)
+sqlplus system/SuaSenhaOracle123
 
+# 3. Executar a consulta à tabela criada pelo Entity Framework
+SELECT * FROM "tb_pets";
 
-🔗 10. Rotas da API
-A aplicação possui CRUD completo:
+Os dados inseridos através da API estarão listados no console do banco de dados, provando o funcionamento correto da persistência de estado no volume associado à infraestrutura.
 
-/api/pets
-/api/consultations
-/api/users
-/api/veterinarians
+--------------------------------------------------
 
-Com documentação via Swagger.
+8. Destruição da Infraestrutura (Teardown)
 
-📘 11. README Estruturado
-Descrição
-Sistema backend para gestão veterinária baseado em cloud.
-Benefícios
+Para evitar custos de recursos ociosos, todo o ambiente deve ser destruído após a utilização.
 
-Escalabilidade
-Segurança
-Persistência
-Integração fácil
+1. Remoção dos contentores e volumes locais (na Máquina Virtual):
+sudo docker-compose down -v
+exit
 
-Execução
-Shelldocker-compose up -dMostrar mais linhas
+2. Exclusão do Grupo de Recursos (no terminal local / Azure Cloud Shell):
+az group delete --name celtics_group --yes --no-wait
 
-✅ 12. Requisitos Atendidos
-De acordo com o desafio DevOps: [2TDS Fever...º Semestre | PDF]
-✔ Execução em background
-✔ Usuário non-root
-✔ Banco containerizado
-✔ Volume persistente
-✔ Deploy em nuvem
-✔ CRUD completo funcionando
+--------------------------------------------------
 
-🧩 13. Arquitetura Macro
-Fluxo geral:
-Cliente → Azure → VM → Docker → API → Banco
+Assim foi finalizado o processo e encerrado a máquina da VM.
 
-🎯 14. Conclusão
-O projeto demonstra domínio completo de práticas modernas de:
-
-DevOps
-Computação em nuvem
-Containerização
-Arquitetura distribuída
-
-Além disso, soluciona um problema relevante do mercado veterinário, agregando valor real para clínicas e usuários.
-
-🚀 COMO GERAR O ARQUIVO FINAL (IMPORTANTE)
-✅ Passo a passo:
-
-Abrir Word
-Colar tudo
-Inserir estilos:
-
-Título 1 → Seções
-
-
-Inserir sumário automático:
-
-Referências → Sumário
-
-
-Exportar:
-
-Arquivo → Exportar → PDF
-
-
-
-
-🔥 SE QUISER GANHAR MAIS PONTO (RECOMENDO MUITO)
-Posso ainda gerar pra você:
-✅ Diagrama profissional (Draw.io pronto)
-✅ Versão com normas ABNT
-✅ Roteiro do vídeo (que eles pedem na entrega)
-✅ Slides do pitch
-Só falar:
-👉 “quero o pacote completo FIAP”
-FontesForneça seus comentários sobre o BizChatYou said: Quero o pacote completo FIAPCopilot said: CopilotPerfeito 🔥 agora você vai ter o PACOTE COMPLETO FIAP nível 10/10 — exatamente o que o professor espera ver (DevOps completo, apresentação, documentação e arquitetura).
-Vou te entregar TUDO PRONTO pra copia + uso direto:
-
-📦 ✅ 1. DIAGRAMA DE ARQUITETURA (para o Word / Draw.io)
-🎯 COMO DESENHAR (copia isso no Draw.io ou PowerPoint)
-Estrutura:
-[ Cliente / Browser ]
-          ↓
-[ Azure Firewall / NSG ]
-          ↓
-[ Máquina Virtual (Ubuntu) ]
-          ↓
-   [ Docker Engine ]
-      ↓        ↓
-[ API .NET ]  [ Oracle DB ]
-                   ↓
-          [ Volume Persistente ]
-
-
-💡 Legenda pra colocar no trabalho:
-
-🔵 Cliente → acesso via HTTP
-🟢 Azure → controle de rede
-🟠 VM → processamento
-🐳 Docker → containers
-🔴 Oracle → banco de dados
-💾 Volume → persistência
-
-
-🎥 ✅ 2. ROTEIRO DO VÍDEO (OBRIGATÓRIO NA ENTREGA)
-🎬 INTRO (15s)
-"Oi professor, esse é o projeto CelticsTech API desenvolvido para o Challenge FIAP 2026. Vou demonstrar a infraestrutura DevOps em nuvem."
-
-☁️ PARTE 1 — Azure CLI (mostra terminal)
-✅ Executa:
-Shellaz group create ...az vm create ...Mostrar mais linhas
-Fala:
-"Neste momento estou criando a infraestrutura totalmente via CLI, conforme exigido pelo desafio."
-
-🐳 PARTE 2 — Docker (mostra VM)
-✅ Executa:
-Shelldocker-compose up -d``Mostrar mais linhas
-Fala:
-"A aplicação está rodando em background com Docker."
-
-🧪 PARTE 3 — TESTE DA API
-
-Abre Swagger
-Faz:
-
-GET
-POST
-PUT
-DELETE
-
-
-
-Fala:
-"Aqui estou provando o CRUD completo funcionando."
-
-💾 PARTE 4 — PERSISTÊNCIA
-👉 Faça:
-
-Inserir dado
-Derrubar container
-Subir de novo
-
-Fala:
-"Mesmo após reiniciar o container, os dados permanecem salvos devido ao volume persistente."
-
-❌ PARTE 5 — DELETAR VM (OBRIGATÓRIO)
-Shellaz group delete --name celtics_groupMostrar mais linhas
-Fala:
-"Finalizando com a remoção dos recursos conforme exigido."
-
-🎤 ✅ 3. SLIDES DO PITCH (PRONTO)
-Slide 1 – Nome
-CelticsTech API
-Gestão Veterinária Inteligente
-
-Slide 2 – Problema
-
-Jornada fragmentada
-Falta continuidade
-Baixa fidelização
-
-
-Slide 3 – Solução
-
-API completa
-CRUD veterinário
-Infraestrutura em nuvem
-
-
-Slide 4 – Tecnologias
-
-.NET 8
-Docker
-Oracle
-Azure
-
-
-Slide 5 – Arquitetura
-(Coloca o diagrama que te dei)
-
-Slide 6 – Benefícios
-
-Escalabilidade
-Segurança
-Persistência
-Integração
-
-
-Slide 7 – Diferencial
-
-Non-root user ✅
-Docker ✅
-Cloud ✅
-
-
-Slide 8 – Conclusão
-"Solução real, escalável e aplicável ao mercado."
+Obrigado.
